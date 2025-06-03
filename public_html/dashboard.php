@@ -1,9 +1,13 @@
 <?php
 session_start();
-if (!isset($_SESSION['user'])) {
+require_once 'config.php';
+require_once 'classes/Invoice.php';
+if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit();
 }
+$invoiceModel = new Invoice($pdo);
+$invoices = $invoiceModel->getAllByUser($_SESSION['user_id']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -34,8 +38,22 @@ if (!isset($_SESSION['user'])) {
 <body>
     <div class="wrapper">
         <h1>Welcome, <?php echo htmlspecialchars($_SESSION['user']); ?>!</h1>
-        <p>This is a placeholder dashboard.</p>
-        <a href="logout.php">Logout</a>
+        <p><a href="create_invoice.php">Create New Invoice</a></p>
+        <?php if ($invoices): ?>
+            <table style="width:100%;max-width:600px;margin:auto;border-collapse:collapse;">
+                <tr><th align="left">Client</th><th>Date</th><th></th></tr>
+                <?php foreach ($invoices as $inv): ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($inv['client_name']); ?></td>
+                        <td><?php echo htmlspecialchars($inv['invoice_date']); ?></td>
+                        <td><a href="view_invoice.php?id=<?php echo $inv['id']; ?>">View</a></td>
+                    </tr>
+                <?php endforeach; ?>
+            </table>
+        <?php else: ?>
+            <p>No invoices yet.</p>
+        <?php endif; ?>
+        <p><a href="logout.php">Logout</a></p>
     </div>
 </body>
 </html>
