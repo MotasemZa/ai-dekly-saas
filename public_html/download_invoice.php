@@ -2,7 +2,7 @@
 session_start();
 require_once 'config.php';
 require_once 'classes/Invoice.php';
-require_once 'vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 use Dompdf\Dompdf;
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
