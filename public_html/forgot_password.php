@@ -11,7 +11,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$email]);
         $user = $stmt->fetch();
         if ($user) {
-            $token = bin2hex(random_bytes(16));
+            // Generate a secure token even if random_bytes is unavailable
+            if (function_exists('random_bytes')) {
+                $token = bin2hex(random_bytes(16));
+            } elseif (function_exists('openssl_random_pseudo_bytes')) {
+                $token = bin2hex(openssl_random_pseudo_bytes(16));
+            } else {
+                $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                $token = '';
+                for ($i = 0; $i < 32; $i++) {
+                    $token .= $characters[mt_rand(0, strlen($characters) - 1)];
+                }
+            }
             $expires = date('Y-m-d H:i:s', time() + 3600); // 1 hour
             $stmt = $pdo->prepare('UPDATE users SET reset_token=?, reset_token_expires=? WHERE id=?');
             $stmt->execute([$token, $expires, $user['id']]);
